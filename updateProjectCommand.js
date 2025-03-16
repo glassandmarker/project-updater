@@ -1,55 +1,38 @@
-require("dotenv").config();
-const axios = require("axios");
-const Airtable = require("airtable");
-const channelTypes = ["post", "prod", "gfx", "gfx_review"];
+const updateSlackChannels = require('./updates/updateSlackChannels');
+const updateAirtableProjectRecord = require('./updates/updateAirtable');
 
-const formatProjectSlug = (name) =>
-  name.trim().tolowerCase().replace(/\s+/g, "_"); // Converts project name into slack-friendly format
-const formatProjectId = (id) => id.trim().tolowerCase(); // Formats the ID into Lowercase
+const formatProjectSlug = (name) => name.trim().toLowerCase().replace(/\s+/g, "_");
+const formatProjectId = (id) => id.trim().toLowerCase();
 
-//Function that registers the /update project command with the slack bot
 const registerUpdateProjectCommand = (app) => {
   app.command("/update-project", async ({ command, ack, say }) => {
-    await ack(); // acknowledge the command
+    await ack();
+
     try {
-      const match = command.text.match(/"(.+?)"\s+"(.+?)"\s+"(.+?)"\s+"(.+?)"/); // This regex extracts all parts from users input, if input don't match, it will be null
+      const match = command.text.match(/"(.+?)"\s+"(.+?)"\s+"(.+?)"\s+"(.+?)"/);
       if (!match) {
-        await say(
-          '⚠️ Please use this format:\n`/update-project "Old Project Name" "New Project Name" "Old Project ID" "New Project ID"`'
-        );
+        await say("⚠️ Format: `/update-project \"Old Name\" \"New Name\" \"Old ID\" \"New ID\"`");
         return;
       }
-      const [
-        _,
-        oldProjectName,
-        newProjectName,
-        oldProjectIdRaw,
-        newProjectIdRaw,
-      ] = match;
 
-      const oldProjectSlug = formatProjectSlug(oldProjectName);
-      const newProjectSlug = formatProjectSlug(newProjectName);
-      const oldProjectId = formatProjectSlug(oldProjectIdRaw);
-      const newProjectId = formatProjectSlug(newProjectIdRaw);
+      const [_, oldName, newName, oldIdRaw, newIdRaw] = match;
+      const oldSlug = formatProjectSlug(oldName);
+      const newSlug = formatProjectSlug(newName);
+      const oldId = formatProjectId(oldIdRaw);
+      const newId = formatProjectId(newIdRaw);
 
-      // Update Slack Channel Names
-      await say("🔄 Updating Slack channel names...");
-      const updatedChannels = await renameSlackChannels(
-        oldProjectName,
-        newProjectName,
-        oldProjectIdRaw,
-        newProjectIdRaw
-      );
+      await say("🔄 Updating Slack channels...");
+      const renamed = await updateSlackChannels(oldSlug, newSlug, oldId, newId);
 
-      // Done!
-      await say(
-        `✅ Project update complete!• Renamed Slack channels:${updatedChannels
-          .map((c) => `  - ${c.old} ➝ ${c.new}`)
-          .join("\n")}• Airtable MasterIdList updated successfully.`
-      );
+      await say("📄 Updating Airtable MasterIdList...");
+      await updateAirtableProjectRecord(oldName, newName, oldIdRaw, newIdRaw);
+
+      await say(`✅ Update Complete!\n${renamed.map(r => `• ${r.old} ➝ ${r.new}`).join('\n')}`);
     } catch (err) {
-      console.error("Error in update-project command:", err);
-      await say("❌ Something went wrong. Check the server logs for details.");
+      console.error("Update error:", err);
+      await say("❌ Something went wrong. Check logs.");
     }
   });
 };
+
+module.exports = { registerUpdateProjectCommand };
