@@ -1,13 +1,14 @@
-require("dotenv").config();
-const express = require("express");
-const app = express();
+const {App} = require("@slack/bolt");
+const {registerUpdateProjectCommand} = require("./updatePorjectCommand");
 
-app.use(express.json());
-
-app.post("/webhook", (req, res) => {
-    console.log("Webhook received:", req.body);
-    res.json({message: "Received webhook!"})
+const app = new App({
+    token: process.env.SLACK_BOT_TOKEN,
+    signingSecret: process.env.SLACK_SINGING_SECRET
 });
 
-const PORT = process.envPORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+registerUpdateProjectCommand(app);
+
+(async () => {
+    await app.start(process.env.PORT || 3000);
+    console.log("Slack bot is running")
+})();
