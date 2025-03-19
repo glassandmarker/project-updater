@@ -1,9 +1,10 @@
+require("dotenv").config();
 const {App} = require("@slack/bolt");
-const {registerUpdateProjectCommand} = require("./updatePorjectCommand");
+const {registerUpdateProjectCommand} = require("./updateProjectCommand");
 
 const app = new App({
     token: process.env.SLACK_BOT_TOKEN,
-    signingSecret: process.env.SLACK_SINGING_SECRET
+    signingSecret: process.env.SLACK_SIGNING_SECRET
 });
 
 registerUpdateProjectCommand(app);

@@ -1,5 +1,6 @@
 const updateSlackChannels = require('./updates/updateSlackChannels');
 const updateAirtableProjectRecord = require('./updates/updateAirtable');
+const updateMondayProject = require('./updates/updateMonday')
 
 const formatProjectSlug = (name) => name.trim().toLowerCase().replace(/\s+/g, "_");
 const formatProjectId = (id) => id.trim().toLowerCase();
@@ -26,6 +27,9 @@ const registerUpdateProjectCommand = (app) => {
 
       await say("📄 Updating Airtable MasterIdList...");
       await updateAirtableProjectRecord(oldName, newName, oldIdRaw, newIdRaw);
+
+      await say("🔄 Updating Monday.com board...")
+      await updateMondayProject(oldId, newId,oldName, newName);
 
       await say(`✅ Update Complete!\n${renamed.map(r => `• ${r.old} ➝ ${r.new}`).join('\n')}`);
     } catch (err) {
