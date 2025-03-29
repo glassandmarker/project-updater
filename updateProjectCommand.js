@@ -32,7 +32,7 @@ const registerUpdateProjectCommand = (app) => {
       await say("🔄 Updating Monday.com board...")
       await updateMondayProject(oldId, newId,oldName, newName);
 
-      await say("Updating Google Sheets");
+      await say("🔄 Updating Google Sheets...");
       await updateGoogleSheet(oldId, newId,oldName, newName);
 
       await say(`✅ Update Complete!\n${renamed.map(r => `• ${r.old} ➝ ${r.new}`).join('\n')}`);
