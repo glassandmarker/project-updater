@@ -13,6 +13,7 @@
     "@slack/bolt": "^4.2.1",
     "airtable": "^0.12.2",
     "axios": "^1.8.1",
+    "box-node-sdk": "^3.7.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "git-filter-repo": "^0.0.30",
