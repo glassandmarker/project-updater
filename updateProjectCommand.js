@@ -1,9 +1,11 @@
-const updateSlackChannels = require('./updates/updateSlackChannels');
-const updateAirtableProjectRecord = require('./updates/updateAirtable');
-const updateMondayProject = require('./updates/updateMonday');
-const updateGoogleSheet = require('./updates/updateGoogleSheet');
+const updateSlackChannels = require("./updates/updateSlackChannels");
+const updateAirtableProjectRecord = require("./updates/updateAirtable");
+const updateMondayProject = require("./updates/updateMonday");
+const updateGoogleSheet = require("./updates/updateGoogleSheet");
+const renameFrameIOProject = require("./updates/renameFrameIOProject");
 
-const formatProjectSlug = (name) => name.trim().toLowerCase().replace(/\s+/g, "_");
+const formatProjectSlug = (name) =>
+  name.trim().toLowerCase().replace(/\s+/g, "_");
 const formatProjectId = (id) => id.trim().toLowerCase();
 
 const registerUpdateProjectCommand = (app) => {
@@ -13,7 +15,9 @@ const registerUpdateProjectCommand = (app) => {
     try {
       const match = command.text.match(/"(.+?)"\s+"(.+?)"\s+"(.+?)"\s+"(.+?)"/);
       if (!match) {
-        await say("⚠️ Format: `/update-project \"Old Name\" \"New Name\" \"Old ID\" \"New ID\"`");
+        await say(
+          '⚠️ Format: `/update-project "Old Name" "New Name" "Old ID" "New ID"`'
+        );
         return;
       }
 
@@ -29,13 +33,20 @@ const registerUpdateProjectCommand = (app) => {
       await say("📄 Updating Airtable MasterIdList...");
       await updateAirtableProjectRecord(oldName, newName, oldIdRaw, newIdRaw);
 
-      await say("🔄 Updating Monday.com board...")
-      await updateMondayProject(oldId, newId,oldName, newName);
+      await say("🔄 Updating Monday.com board...");
+      await updateMondayProject(oldId, newId, oldName, newName);
 
       await say("🔄 Updating Google Sheets...");
-      await updateGoogleSheet(oldId, newId,oldName, newName);
+      await updateGoogleSheet(oldId, newId, oldName, newName);
 
-      await say(`✅ Update Complete!\n${renamed.map(r => `• ${r.old} ➝ ${r.new}`).join('\n')}`);
+      await say("Updating Frame.io assets...");
+      await renameFrameIOProject(oldId, oldName, newId, newName);
+
+      await say(
+        `✅ Update Complete!\n${renamed
+          .map((r) => `• ${r.old} ➝ ${r.new}`)
+          .join("\n")}`
+      );
     } catch (err) {
       console.error("Update error:", err);
       await say("❌ Something went wrong. Check logs.");
