@@ -1,17 +1,20 @@
-require("dotenv").config();
 const axios = require("axios");
-
-const headers = {
-  Authorization: `Bearer ${FRAME_IO_TOKEN}`,
-  "Content-Type": "application/json",
-};
+require("dotenv").config();
 
 async function renameFrameIOProjects(
+  token,
   oldProjectId,
   oldProjectName,
   newProjectId,
   newProjectName
 ) {
+
+  const TEAM_ID = process.env.FRAME_IO_TEAM_ID;
+  if(!TEAM_ID || !token){
+    console.error("Missing TEAM_ID or token");
+    return;
+  }
+  
   try {
     const response = await axios.get(
       `https://api.frame.io/v2/teams/${TEAM_ID}/projects`,
